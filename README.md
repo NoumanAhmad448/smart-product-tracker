@@ -1,5 +1,9 @@
 # **Smart Product Tracker - Spring Boot Application**
 
+**Languages:**
+- [English](README.md)
+- [中文 (Chinese)](README_CH.md)
+
 A comprehensive product tracking and management system built with Spring Boot, featuring user authentication, product management, and analytics.
 
 ## **🚀 Quick Start**
