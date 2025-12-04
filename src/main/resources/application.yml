@@ -15,7 +15,29 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show-sql: true
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+    show-sql: false
+    open-in-view: false
+    
+  jackson:
+    default-property-inclusion: NON_NULL
+    serialization:
+      write-dates-as-timestamps: false
+      write-date-timestamps-as-nanoseconds: false
+
+  logging:
+  level:
+    com.smarttracker.product: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
   security:
     user:
@@ -29,3 +51,10 @@ logging:
   level:
     com.smarttracker.product: DEBUG
     org.springframework.security: DEBUG
+
+app:
+  security:
+    password-strength: 12
+    jwt:
+      secret: ${JWT_SECRET:your-super-secret-key-change-in-production}
+      expiration: 86400000 # 24 hours in milliseconds
