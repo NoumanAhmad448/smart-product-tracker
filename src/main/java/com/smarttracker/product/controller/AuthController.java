@@ -1,8 +1,5 @@
 package com.smarttracker.product.controller;
 
-import com.smarttracker.product.dto.ApiResponse;
-import com.smarttracker.product.dto.RegisterRequest;
-import com.smarttracker.product.dto.UserResponse;
 import com.smarttracker.product.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+
+import com.smarttracker.product.dto.*;
+import com.smarttracker.product.service.AuthService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ import java.util.Map;
 public class AuthController {
     
     private final UserService userService;
+    private final AuthService authService;
     
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(
@@ -77,6 +81,84 @@ public class AuthController {
         ApiResponse<Map<String, Boolean>> response = ApiResponse.success(
                 isValid ? "Password is valid" : "Password is too weak",
                 result
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponseDTO<LoginResponseDTO>> login(
+            @Valid @RequestBody LoginRequestDTO request) {
+        
+        log.info("Login request received for: {}", request.getUsernameOrEmail());
+        
+        LoginResponseDTO response = authService.authenticate(request);
+        
+        ApiResponseDTO<LoginResponseDTO> apiResponse = ApiResponseDTO.success(
+                "Login successful",
+                response
+        );
+        
+        return ResponseEntity.ok(apiResponse);
+    }
+    
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponseDTO<LoginResponseDTO.Tokens>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequestDTO request) {
+        
+        log.info("Refresh token request received");
+        
+        LoginResponseDTO.Tokens tokens = authService.refreshToken(request.getRefreshToken());
+        
+        ApiResponseDTO<LoginResponseDTO.Tokens> response = ApiResponseDTO.success(
+                "Token refreshed successfully",
+                tokens
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponseDTO<Void>> logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication != null && authentication.isAuthenticated()) {
+            String username = authentication.getName();
+            authService.logout(username);
+            log.info("User logged out: {}", username);
+        }
+        
+        ApiResponseDTO<Void> response = ApiResponseDTO.success(
+                "Logout successful",
+                null
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            ApiResponseDTO<UserResponseDTO> response = ApiResponseDTO.error(
+                    "User not authenticated",
+                    "UNAUTHENTICATED"
+            );
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+        
+        String username = authentication.getName();
+        log.debug("Fetching current user: {}", username);
+        
+        // In a real app, you'd fetch from database
+        // For now, return basic info
+        UserResponseDTO userResponse = UserResponseDTO.builder()
+                .username(username)
+                .build();
+        
+        ApiResponseDTO<UserResponseDTO> response = ApiResponseDTO.success(
+                "Current user fetched successfully",
+                userResponse
         );
         
         return ResponseEntity.ok(response);

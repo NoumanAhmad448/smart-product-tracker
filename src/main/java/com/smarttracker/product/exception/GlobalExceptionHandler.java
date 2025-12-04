@@ -93,4 +93,15 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+     public ResponseEntity<ApiResponseDTO<String>> handleAuthenticationFailedException(
+        AuthenticationFailedException ex) {
+
+     ApiResponseDTO<String> response = ApiResponseDTO.error(
+        ex.getMessage(), 
+        ex.getErrorCode()
+ );
+    return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+}
 }

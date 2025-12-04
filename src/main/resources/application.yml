@@ -58,3 +58,9 @@ app:
     jwt:
       secret: ${JWT_SECRET:your-super-secret-key-change-in-production}
       expiration: 86400000 # 24 hours in milliseconds
+
+# Add JWT configuration
+jwt:
+  secret: "your-super-secret-jwt-key-that-should-be-at-least-32-characters-long-change-this-in-production"
+  expiration: 86400000    # 24 hours in milliseconds
+  refresh-expiration: 604800000  # 7 days in milliseconds
